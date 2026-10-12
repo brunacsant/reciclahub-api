@@ -595,5 +595,3 @@ O histórico de execuções também pode ser consultado em [GitHub Actions — R
 | README.md com instruções e prints | ☑ Incluído neste arquivo, acompanhado da pasta `docs/evidencias` |
 | Documentação técnica com evidências (PDF ou PPT) | ☑ PDF técnico criado e disponibilizado separadamente |
 | Deploy realizado nos ambientes staging e produção | ☑ Ambos concluídos e validados por resposta HTTP |
-
-**Conferências finais antes de enviar:** preencher os nomes dos integrantes no PDF; incluir o PDF no ZIP; compactar o projeto completo sem `.env` real, `.git` ou outros arquivos com segredos.
