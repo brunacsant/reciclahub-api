@@ -1,7 +1,10 @@
+# Projeto - Cidades ESG Inteligentes
 
-# ReciclaHub
+## ReciclaHub
 
 **Plataforma Inteligente de Gestão Empresarial de Resíduos e Coletas Sustentáveis**
+
+**Projeto acadêmico — Cidades ESG Inteligentes**
 
 ---
 
@@ -13,9 +16,7 @@ O objetivo do sistema é automatizar o monitoramento de resíduos, melhorar a ef
 
 A solução permitirá que empresas acompanhem em tempo real os níveis de armazenamento dos pontos de coleta, recebam alertas automáticos de capacidade excedida, acompanhem históricos de coletas e organizem operações logísticas de reciclagem de maneira segura e centralizada.
 
-O projeto se enquadra no tema ESG: **Gestão de resíduos e reciclagem**
-
-com foco em:
+O projeto se enquadra no tema ESG: **Gestão de resíduos e reciclagem**, com foco em:
 
 * rastreamento da coleta seletiva;
 * descarte correto de resíduos;
@@ -82,7 +83,7 @@ As empresas coletoras só poderão atuar nos tipos de resíduos autorizados em s
 
 ## Etapa 1 — Cadastro e organização
 
-A organização efetua um cadastro, e após efetuar login, implementa seus pontos de armazenamento para coleta:
+A organização efetua um cadastro e, após efetuar login, implementa seus pontos de armazenamento para coleta:
 
 * empresas de armazenamento;
 * empresas coletoras;
@@ -201,19 +202,28 @@ Uso de triggers para:
 
 ---
 
-# 6. Tecnologias do Projeto
+# 6. Tecnologias utilizadas
 
-* Java 21
-* Spring Boot
-* Spring Security
-* JWT Authentication
-* Spring Data JPA
-* Bean Validation
-* Oracle Database
-* Flyway
-* Docker
-* Maven
-* Postman / Insomnia
+| Tecnologia | Utilização |
+|---|---|
+| Java 21 | Linguagem de programação da API |
+| Spring Boot 3.5.6 | Framework principal da API REST |
+| Spring Web | Exposição de endpoints HTTP |
+| Spring Security | Autenticação e autorização |
+| JWT / JJWT | Emissão e validação de tokens de acesso |
+| BCrypt | Armazenamento seguro das senhas dos usuários |
+| Spring Data JPA | Persistência de dados |
+| Bean Validation | Validação das requisições |
+| Oracle Database / Oracle Free 23c | Banco de dados relacional |
+| Flyway | Versionamento de migrações do banco |
+| Maven / Maven Wrapper | Dependências, build e execução dos testes |
+| JUnit / Spring Boot Test | Infraestrutura de testes automatizados |
+| Docker | Construção e execução de imagens |
+| Docker Compose | Orquestração do Oracle e das instâncias da API |
+| Git e GitHub | Controle de versão e hospedagem do código |
+| GitHub Actions | Automação de CI/CD |
+| Self-hosted Runner Windows | Execução dos deploys no Docker Desktop local |
+| Postman / Insomnia | Ferramentas de teste manual dos endpoints |
 
 ---
 
@@ -231,14 +241,14 @@ A API é protegida por **Spring Security** com autenticação baseada em **JWT**
 
 ## Endpoints públicos
 
-| Método | Endpoint                | Descrição                         |
-|--------|-------------------------|-----------------------------------|
-| POST   | `/api/cadastro/empresa` | Cadastra uma nova empresa         |
-| POST   | `/api/auth/login`       | Realiza login e retorna token JWT |
+| Método | Endpoint | Descrição |
+|---|---|---|
+| POST | `/api/cadastro/empresa` | Cadastra uma nova empresa |
+| POST | `/api/auth/login` | Realiza login e retorna token JWT |
 
 Todos os demais endpoints exigem o cabeçalho:
 
-```
+```http
 Authorization: Bearer <token-jwt>
 ```
 
@@ -265,7 +275,7 @@ Authorization: Bearer <token-jwt>
 }
 ```
 
-Resposta:
+Resposta de exemplo:
 
 ```json
 {
@@ -286,67 +296,109 @@ Resposta:
 O campo `tipo` da empresa é mapeado como uma role do Spring Security:
 
 - `ARMAZENAMENTO` → `ROLE_ARMAZENAMENTO`
-- `COLETORA`     → `ROLE_COLETORA`
+- `COLETORA` → `ROLE_COLETORA`
 
 Restrições adicionais podem ser definidas por endpoint usando `@PreAuthorize` (já habilitado via `@EnableMethodSecurity`).
 
 ---
 
-# 9. Execução com Docker
+# 9. Como executar localmente com Docker
 
-O projeto possui `Dockerfile` (multi-stage) e `docker-compose.yml` com **Oracle Free 23c** + API.
+O projeto possui `Dockerfile` multi-stage e `docker-compose.yml` para iniciar **Oracle Free 23c** e a API. O arquivo `docker-compose.environments.yml` define instâncias adicionais para staging e produção.
 
 ## Pré-requisitos
 
-- Docker
-- Docker Compose
+- Docker Desktop ou Docker Engine, com Docker Compose;
+- Portas `8080` (API local) e `1522` (Oracle) disponíveis, ou ajustadas no `.env`;
+- Para staging e produção, portas `8081` e `8082` disponíveis.
 
 ## Passo a passo
 
-1. (Opcional) Copie o arquivo de exemplo de variáveis de ambiente:
+1. Na raiz do projeto, copie o arquivo de exemplo das variáveis de ambiente.
 
-```bash
-cp .env.example .env
-```
+   **PowerShell (Windows):**
 
-Edite os valores conforme necessário (em produção, **sempre** redefina o `JWT_SECRET`).
+   ```powershell
+   Copy-Item .env.example .env
+   ```
 
-2. Suba os contêineres:
+   **Linux/macOS:**
 
-```bash
-docker compose up -d --build
-```
+   ```bash
+   cp .env.example .env
+   ```
 
-3. Acompanhe os logs (o Oracle leva ~1-2 min na primeira inicialização):
+2. Edite o `.env` com os valores adequados de `ORACLE_PASSWORD`, `ORACLE_APP_USER`, `ORACLE_APP_PASSWORD` e `JWT_SECRET`. Não compartilhe esse arquivo com credenciais reais. Em ambientes não acadêmicos, não utilize os valores padrão de exemplo.
 
-```bash
-docker compose logs -f api
-```
+3. Suba os contêineres:
 
-4. A API estará disponível em `http://localhost:8080`.
+   ```bash
+   docker compose up -d --build
+   ```
 
-5. Para encerrar:
+4. Confira o estado dos serviços e acompanhe os logs. O Oracle pode levar alguns minutos para ficar pronto na primeira inicialização.
 
-```bash
-docker compose down
-```
+   ```bash
+   docker compose ps
+   docker compose logs -f api
+   ```
 
-Para remover também o volume com os dados do banco:
+5. A API estará disponível em `http://localhost:8080`.
 
-```bash
-docker compose down -v
-```
+   **Teste pelo PowerShell:**
+
+   ```powershell
+   curl.exe -i http://localhost:8080/
+   ```
+
+   **Observação:** o retorno `HTTP 401 Unauthorized` na rota `/` é esperado porque ela exige autenticação. Essa resposta confirma que o servidor HTTP atende às requisições, mas não substitui testes funcionais dos endpoints.
+
+6. Para encerrar sem remover o volume persistente do banco:
+
+   ```bash
+   docker compose down
+   ```
+
+   **Atenção:** o comando `docker compose down -v` também remove o volume de dados do Oracle. Utilize-o somente se desejar apagar os dados persistidos.
 
 ## Variáveis de ambiente principais
 
-| Variável                  | Padrão                                | Descrição                                  |
-|---------------------------|---------------------------------------|--------------------------------------------|
-| `SPRING_DATASOURCE_URL`   | jdbc:oracle:thin:@oracle-db:1521/FREEPDB1 | URL JDBC do Oracle                     |
-| `SPRING_DATASOURCE_USERNAME` | reciclahub                         | Usuário do banco                           |
-| `SPRING_DATASOURCE_PASSWORD` | reciclahub                         | Senha do banco                             |
-| `JWT_SECRET`              | (valor de exemplo em Base64)          | Chave HMAC para assinar tokens (≥ 256 bits)|
-| `JWT_EXPIRATION_MS`       | 3600000                               | Validade do token em milissegundos         |
-| `SERVER_PORT`             | 8080                                  | Porta exposta pela API                     |
+| Variável | Utilização | Padrão no Compose principal |
+|---|---|---|
+| `ORACLE_PASSWORD` | Senha administrativa do Oracle | `oracle` |
+| `ORACLE_APP_USER` | Usuário da aplicação no Oracle | `reciclahub` |
+| `ORACLE_APP_PASSWORD` | Senha do usuário da aplicação | `reciclahub` |
+| `ORACLE_PORT` | Porta do Oracle exposta no computador | `1522` |
+| `API_PORT` | Porta da API principal no computador | `8080` |
+| `JWT_SECRET` | Segredo de assinatura dos tokens JWT | Valor de exemplo definido no Compose principal |
+| `JWT_EXPIRATION_MS` | Validade dos tokens em milissegundos | `3600000` |
+
+Os parâmetros `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD`, `JWT_ISSUER` e `SERVER_PORT` são disponibilizados à aplicação pelo Docker Compose. A URL JDBC no Docker aponta para `jdbc:oracle:thin:@oracle-db:1521/FREEPDB1`.
+
+## Ambientes de staging e produção
+
+Os ambientes são definidos em `docker-compose.environments.yml`:
+
+| Ambiente | Container | Endereço | Porta do host |
+|---|---|---|---|
+| API principal | `reciclahub-api` | `http://localhost:8080` | `8080` |
+| Staging | `reciclahub-staging` | `http://localhost:8081` | `8081` |
+| Produção | `reciclahub-production` | `http://localhost:8082` | `8082` |
+
+Para executá-los manualmente, inicie primeiro o Oracle pelo Compose principal, garantindo a rede Docker utilizada pelos serviços:
+
+```bash
+docker compose up -d oracle-db
+```
+
+Depois, com o `.env` configurado:
+
+```bash
+docker compose -f docker-compose.environments.yml -p reciclahub-env up -d --build staging
+docker compose -f docker-compose.environments.yml -p reciclahub-env up -d --build production
+```
+
+**Limitação da infraestrutura:** staging e produção são contêineres executados na mesma máquina e compartilham o Oracle local. Não representam hospedagem pública nem isolamento completo dos ambientes.
 
 ---
 
@@ -356,4 +408,192 @@ docker compose down -v
 ./mvnw spring-boot:run
 ```
 
-Por padrão a aplicação utiliza o Oracle da FIAP (`oracle.fiap.com.br`). Para apontar para outro banco, defina as variáveis `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME` e `SPRING_DATASOURCE_PASSWORD`.
+No Windows, também é possível executar:
+
+```powershell
+.\mvnw.cmd spring-boot:run
+```
+
+Por padrão, a aplicação utiliza o Oracle da FIAP (`oracle.fiap.com.br`). Para apontar para outro banco, defina as variáveis `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME` e `SPRING_DATASOURCE_PASSWORD`. É necessário que o banco esteja acessível para a inicialização da aplicação.
+
+---
+
+# 11. Pipeline CI/CD
+
+A integração e a implantação são automatizadas pelo **GitHub Actions**, conforme o workflow em [`.github/workflows/ci-cd.yml`](.github/workflows/ci-cd.yml).
+
+## Integração contínua (CI)
+
+O job **Build e Testes** utiliza um runner hospedado pelo GitHub com **Ubuntu**. Sua execução ocorre em `push` para `master`, em `pull_request` direcionado a `master` e em acionamentos manuais (`workflow_dispatch`).
+
+Etapas executadas:
+
+1. Baixar o código com `actions/checkout@v4`.
+2. Preparar o **Java 21** com `actions/setup-java@v4`.
+3. Disponibilizar as credenciais de conexão com o Oracle por GitHub Actions Secrets: `DB_URL`, `DB_USERNAME` e `DB_PASSWORD`.
+4. Executar o Maven Wrapper com `./mvnw clean verify` para compilar e executar os testes.
+5. Publicar os relatórios de teste disponíveis como artefatos do GitHub Actions.
+6. Validar a construção da imagem por meio de `docker build`.
+
+Se o job de CI falhar, os jobs de deploy que dependem dele não são executados.
+
+## Implantação contínua sob acionamento manual (CD)
+
+Os jobs **Deploy Staging** e **Deploy Producao** são executados somente quando o workflow é iniciado manualmente pela opção **Run workflow**, na branch `master`, com a seleção do ambiente desejado (`staging` ou `production`). A CI é executada antes do deploy selecionado.
+
+Os deploys utilizam um **Self-hosted Runner Windows** conectado ao GitHub e com acesso ao Docker Desktop da máquina local. Cada job:
+
+1. Baixa o código da versão selecionada.
+2. Confere o acesso ao Docker, à rede compartilhada e às configurações necessárias.
+3. Executa `docker compose` para construir a imagem e iniciar ou atualizar o contêiner do ambiente.
+4. Aguarda a inicialização e verifica a resposta HTTP da API (`8081` para staging ou `8082` para produção).
+
+A API possui autenticação com Spring Security. Por isso, o retorno `401 Unauthorized` na rota `/` é aceito pela checagem de disponibilidade. Ele indica que a API responde, não que todos os endpoints ou operações de banco foram testados.
+
+Os secrets do GitHub são utilizados para as credenciais da CI e para a configuração de deploy. Os valores reais não devem constar no README, no ZIP ou em capturas de tela.
+
+**Funcionamento da infraestrutura:** o runner Windows precisa estar conectado, com o computador ligado e o Docker Desktop em execução. A imagem é construída novamente durante o deploy local; a imagem produzida no job Ubuntu não é publicada em um registry para reutilização.
+
+**Repositório:** [github.com/brunacsant/reciclahub-api](https://github.com/brunacsant/reciclahub-api)
+
+---
+
+# 12. Containerização
+
+A aplicação é empacotada com um **Dockerfile multi-stage**, separando o ambiente de build do ambiente de execução.
+
+## Conteúdo do Dockerfile
+
+```dockerfile
+# =========================
+# Stage 1 - Build
+# =========================
+FROM eclipse-temurin:21-jdk-alpine AS builder
+
+WORKDIR /build
+
+# Copia wrappers e arquivos do Maven primeiro para aproveitar cache de dependências
+COPY mvnw mvnw.cmd pom.xml ./
+COPY .mvn ./.mvn
+
+RUN chmod +x mvnw && ./mvnw -B -q dependency:go-offline
+
+# Copia o código-fonte e empacota
+COPY src ./src
+RUN ./mvnw -B -q clean package -DskipTests
+
+# =========================
+# Stage 2 - Runtime
+# =========================
+FROM eclipse-temurin:21-jre-alpine
+
+# Cria um usuário não-root por segurança
+RUN addgroup -S spring && adduser -S spring -G spring
+
+WORKDIR /app
+
+COPY --from=builder /build/target/*.jar app.jar
+
+RUN chown -R spring:spring /app
+USER spring
+
+EXPOSE 8080
+
+ENV JAVA_OPTS=""
+
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar /app/app.jar"]
+```
+
+## Estratégias adotadas
+
+- **Multi-stage build:** a etapa inicial utiliza o JDK para compilar a aplicação, enquanto a etapa final utiliza o JRE para execução.
+- **Imagens Alpine:** utilização de imagens compactas do Eclipse Temurin com Java 21.
+- **Cache de dependências:** cópia antecipada dos arquivos Maven antes do código-fonte.
+- **Usuário não-root:** execução da aplicação com o usuário `spring` dentro do contêiner.
+- **Configuração externa:** utilização de variáveis de ambiente para banco de dados e autenticação.
+- **Persistência dos dados:** volume Docker nomeado `oracle-data` para armazenar dados do Oracle entre reinicializações.
+- **Orquestração:** `docker-compose.yml` para Oracle e API principal; `docker-compose.environments.yml` para staging e produção.
+- **Testes separados da imagem:** o Dockerfile utiliza `-DskipTests` durante o empacotamento, pois a pipeline executa os testes anteriormente com `./mvnw clean verify`.
+
+---
+
+# 13. Prints do funcionamento
+
+As evidências da execução da pipeline e do funcionamento dos ambientes estão organizadas em `docs/evidencias/`.
+
+## Link de alguns deploys do projeto 
+https://github.com/brunacsant/reciclahub-api/actions/runs/38288127794
+https://github.com/brunacsant/reciclahub-api/actions/runs/38287816558
+https://github.com/brunacsant/reciclahub-api/actions/runs/38286629050
+
+
+## Build e testes
+
+![Build e testes concluídos no GitHub Actions](docs/evidencias/01-build-testes.png)
+
+## Deploy de staging
+
+![Deploy de staging concluído no GitHub Actions](docs/evidencias/02-deploy-staging.png)
+
+## Deploy de produção
+
+![Deploy de produção concluído no GitHub Actions](docs/evidencias/03-deploy-producao.png)
+
+## Validação da API de staging
+
+**Registro da requisição (PowerShell):**
+
+```powershell
+curl.exe -i http://localhost:8081/
+# HTTP/1.1 401 Unauthorized
+# message: Autenticação necessária para acessar este recurso
+```
+
+![Runner do deploy staging](docs/evidencias/04-runner-staging.png)
+
+## Validação da API de produção
+
+**Registro da requisição (PowerShell):**
+
+```powershell
+curl.exe -i http://localhost:8082/
+# HTTP/1.1 401 Unauthorized
+# message: Autenticação necessária para acessar este recurso
+```
+
+![Runner do deploy produção](docs/evidencias/05-runner-producao.png)
+
+Os testes de disponibilidade realizados nas portas `8081` e `8082` retornaram `HTTP 401 Unauthorized`, resultado esperado para uma requisição sem autenticação na rota `/`.
+
+O histórico de execuções também pode ser consultado em [GitHub Actions — ReciclaHub](https://github.com/brunacsant/reciclahub-api/actions).
+
+> **Nota de segurança:** não inclua o arquivo `.env` nem tokens reais no ZIP. As respostas HTTP acima foram registradas em texto a partir dos testes apresentados, não são capturas de tela.
+
+
+---
+
+# 14. Desafios encontrados e soluções
+
+| Desafio | Solução aplicada |
+|---|---|
+| Falhas de resolução de nomes no Windows durante a configuração do ambiente | Ajuste da configuração de DNS e validação da resolução de nomes. |
+| Falha no build por falta de acesso ao banco acadêmico na CI | Configuração das variáveis `DB_URL`, `DB_USERNAME` e `DB_PASSWORD` nos GitHub Actions Secrets. |
+| Runner Windows não encontrava `pwsh` | Troca para `shell: powershell`, disponível no ambiente do runner. |
+| Nome de container Docker já utilizado | Remoção dos containers antigos de staging e produção, preservando o banco e seus volumes. |
+| Verificação HTTP executada antes da inicialização do Spring Boot | Implementação de tentativas de verificação com espera de até aproximadamente dois minutos. |
+
+---
+
+# 15. Checklist de entrega (obrigatório)
+
+| Item | Situação |
+|---|---|
+| Projeto compactado em `.ZIP` com estrutura organizada | ☑ Pendente: conferir e gerar o ZIP final com o código-fonte |
+| Dockerfile funcional | ☑ Validado por build Docker bem-sucedido |
+| `docker-compose.yml` ou arquivos Kubernetes | ☑ Docker Compose utilizado |
+| Pipeline com etapas de build, teste e deploy | ☑ GitHub Actions executado com sucesso |
+| README.md com instruções e prints | ☑ Incluído neste arquivo, acompanhado da pasta `docs/evidencias` |
+| Documentação técnica com evidências (PDF ou PPT) | ☑ PDF técnico criado e disponibilizado separadamente |
+| Deploy realizado nos ambientes staging e produção | ☑ Ambos concluídos e validados por resposta HTTP |
+
+**Conferências finais antes de enviar:** preencher os nomes dos integrantes no PDF; incluir o PDF no ZIP; compactar o projeto completo sem `.env` real, `.git` ou outros arquivos com segredos.
