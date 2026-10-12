@@ -588,7 +588,7 @@ O histórico de execuções também pode ser consultado em [GitHub Actions — R
 
 | Item | Situação |
 |---|---|
-| Projeto compactado em `.ZIP` com estrutura organizada | ☑ Pendente: conferir e gerar o ZIP final com o código-fonte |
+| Projeto compactado em `.ZIP` com estrutura organizada | ☑ ZIP final analisado e com o código-fonte |
 | Dockerfile funcional | ☑ Validado por build Docker bem-sucedido |
 | `docker-compose.yml` ou arquivos Kubernetes | ☑ Docker Compose utilizado |
 | Pipeline com etapas de build, teste e deploy | ☑ GitHub Actions executado com sucesso |
