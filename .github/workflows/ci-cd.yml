@@ -28,11 +28,29 @@ jobs:
           cache: maven
 
       - name: Executar build e testes
+        
+      - name: Executar build e testes
         env:
           SPRING_DATASOURCE_URL: ${{ secrets.DB_URL }}
           SPRING_DATASOURCE_USERNAME: ${{ secrets.DB_USERNAME }}
           SPRING_DATASOURCE_PASSWORD: ${{ secrets.DB_PASSWORD }}
         run: |
+          if [ -z "$SPRING_DATASOURCE_URL" ]; then
+            echo "ERRO: DB_URL nao configurado"
+            exit 1
+          fi
+
+          if [ -z "$SPRING_DATASOURCE_USERNAME" ]; then
+            echo "ERRO: DB_USERNAME nao configurado"
+            exit 1
+          fi
+
+          if [ -z "$SPRING_DATASOURCE_PASSWORD" ]; then
+            echo "ERRO: DB_PASSWORD nao configurado"
+            exit 1
+          fi
+
+          echo "Secrets presentes no ambiente"
           chmod +x mvnw
           ./mvnw clean verify
       - name: Publicar relatorios dos testes
