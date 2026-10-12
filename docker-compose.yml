@@ -8,7 +8,7 @@ services:
       APP_USER: ${ORACLE_APP_USER:-reciclahub}
       APP_USER_PASSWORD: ${ORACLE_APP_PASSWORD:-reciclahub}
     ports:
-      - "${ORACLE_PORT:-1521}:1521"
+      - "${ORACLE_PORT:-1522}:1521"
     volumes:
       - oracle-data:/opt/oracle/oradata
     healthcheck:
