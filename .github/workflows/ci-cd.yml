@@ -79,7 +79,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Verificar configuracao
-        shell: pwsh
+        shell: powershell
         run: |
           if ([string]::IsNullOrWhiteSpace($env:JWT_SECRET)) {
             throw "JWT_SECRET nao configurado"
@@ -94,13 +94,13 @@ jobs:
           }
 
       - name: Deploy Docker Staging
-        shell: pwsh
+        shell: powershell
         run: |
           docker compose -f docker-compose.environments.yml -p reciclahub-env up -d --build staging
           if ($LASTEXITCODE -ne 0) { exit 1 }
 
       - name: Verificar Staging
-        shell: pwsh
+        shell: powershell
         run: |
           docker compose -f docker-compose.environments.yml -p reciclahub-env ps staging
           if ($LASTEXITCODE -ne 0) { exit 1 }
@@ -130,7 +130,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Verificar configuracao
-        shell: pwsh
+        shell: powershell
         run: |
           if ([string]::IsNullOrWhiteSpace($env:JWT_SECRET)) {
             throw "JWT_SECRET nao configurado"
@@ -145,13 +145,13 @@ jobs:
           }
 
       - name: Deploy Docker Producao
-        shell: pwsh
+        shell: powershell
         run: |
           docker compose -f docker-compose.environments.yml -p reciclahub-env up -d --build production
           if ($LASTEXITCODE -ne 0) { exit 1 }
 
       - name: Verificar Producao
-        shell: pwsh
+        shell: powershell
         run: |
           docker compose -f docker-compose.environments.yml -p reciclahub-env ps production
           if ($LASTEXITCODE -ne 0) { exit 1 }
