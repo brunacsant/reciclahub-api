@@ -7,6 +7,14 @@ on:
   pull_request:
     branches: [master]
   workflow_dispatch:
+    inputs:
+      deploy_target:
+        description: "Ambiente de deploy"
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
 
 permissions:
   contents: read
@@ -27,32 +35,21 @@ jobs:
           java-version: '21'
           cache: maven
 
-      
       - name: Executar build e testes
         env:
           SPRING_DATASOURCE_URL: ${{ secrets.DB_URL }}
           SPRING_DATASOURCE_USERNAME: ${{ secrets.DB_USERNAME }}
           SPRING_DATASOURCE_PASSWORD: ${{ secrets.DB_PASSWORD }}
         run: |
-          if [ -z "$SPRING_DATASOURCE_URL" ]; then
-            echo "ERRO - DB_URL nao configurado"
+          if [ -z "$SPRING_DATASOURCE_URL" ] ||
+             [ -z "$SPRING_DATASOURCE_USERNAME" ] ||
+             [ -z "$SPRING_DATASOURCE_PASSWORD" ]; then
+            echo "Credenciais do banco nao configuradas"
             exit 1
           fi
 
-          if [ -z "$SPRING_DATASOURCE_USERNAME" ]; then
-            echo "ERRO - DB_USERNAME nao configurado"
-            exit 1
-          fi
-
-          if [ -z "$SPRING_DATASOURCE_PASSWORD" ]; then
-            echo "ERRO - DB_PASSWORD nao configurado"
-            exit 1
-          fi
-
-          echo "Secrets presentes no ambiente"
           chmod +x mvnw
           ./mvnw clean verify
-
 
       - name: Publicar relatorios dos testes
         if: always()
@@ -61,19 +58,40 @@ jobs:
           name: relatorios-testes
           path: target/surefire-reports/
           if-no-files-found: ignore
+
       - name: Construir imagem Docker
         run: docker build -t reciclahub-api:${{ github.sha }} .
 
   deploy-staging:
     name: Deploy Staging
     needs: build-test
-    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/master'
+    if: github.event_name == 'workflow_dispatch' && inputs.deploy_target == 'staging' && github.ref == 'refs/heads/master'
     runs-on: [self-hosted, Windows, X64]
     environment: staging
+
+    env:
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      ORACLE_APP_USER: ${{ secrets.ORACLE_APP_USER }}
+      ORACLE_APP_PASSWORD: ${{ secrets.ORACLE_APP_PASSWORD }}
 
     steps:
       - name: Baixar codigo
         uses: actions/checkout@v4
+
+      - name: Verificar configuracao
+        shell: pwsh
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:JWT_SECRET)) {
+            throw "JWT_SECRET nao configurado"
+          }
+
+          docker info
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+
+          docker network inspect reciclahub-api_reciclahub-net *> $null
+          if ($LASTEXITCODE -ne 0) {
+            throw "Rede Docker nao encontrada"
+          }
 
       - name: Deploy Docker Staging
         shell: pwsh
@@ -87,17 +105,44 @@ jobs:
           docker compose -f docker-compose.environments.yml -p reciclahub-env ps staging
           if ($LASTEXITCODE -ne 0) { exit 1 }
 
-          curl.exe -s -o NUL -w "%{http_code}" http://localhost:8081/
+          $response = curl.exe -s -o NUL -w "%{http_code}" --retry 12 --retry-delay 5 --retry-connrefused http://localhost:8081/
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+
+          Write-Host "HTTP Staging: $response"
+          if ([int]$response -lt 200 -or [int]$response -ge 500) {
+            throw "Staging nao respondeu corretamente"
+          }
 
   deploy-production:
     name: Deploy Producao
-    needs: deploy-staging
+    needs: build-test
+    if: github.event_name == 'workflow_dispatch' && inputs.deploy_target == 'production' && github.ref == 'refs/heads/master'
     runs-on: [self-hosted, Windows, X64]
     environment: production
+
+    env:
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      ORACLE_APP_USER: ${{ secrets.ORACLE_APP_USER }}
+      ORACLE_APP_PASSWORD: ${{ secrets.ORACLE_APP_PASSWORD }}
 
     steps:
       - name: Baixar codigo
         uses: actions/checkout@v4
+
+      - name: Verificar configuracao
+        shell: pwsh
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:JWT_SECRET)) {
+            throw "JWT_SECRET nao configurado"
+          }
+
+          docker info
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+
+          docker network inspect reciclahub-api_reciclahub-net *> $null
+          if ($LASTEXITCODE -ne 0) {
+            throw "Rede Docker nao encontrada"
+          }
 
       - name: Deploy Docker Producao
         shell: pwsh
@@ -111,4 +156,10 @@ jobs:
           docker compose -f docker-compose.environments.yml -p reciclahub-env ps production
           if ($LASTEXITCODE -ne 0) { exit 1 }
 
-          curl.exe -s -o NUL -w "%{http_code}" http://localhost:8082/
+          $response = curl.exe -s -o NUL -w "%{http_code}" --retry 12 --retry-delay 5 --retry-connrefused http://localhost:8082/
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+
+          Write-Host "HTTP Producao: $response"
+          if ([int]$response -lt 200 -or [int]$response -ge 500) {
+            throw "Producao nao respondeu corretamente"
+          }
