@@ -549,7 +549,7 @@ curl.exe -i http://localhost:8081/
 # message: Autenticação necessária para acessar este recurso
 ```
 
-![Runner do deploy staging](docs/evidencias/04-runner-staging.png)
+![Runner do deploy staging](docs/evidencias/04-validacao-staging.png)
 
 ## Validação da API de produção
 
@@ -561,7 +561,7 @@ curl.exe -i http://localhost:8082/
 # message: Autenticação necessária para acessar este recurso
 ```
 
-![Runner do deploy produção](docs/evidencias/05-runner-producao.png)
+![Runner do deploy produção](docs/evidencias/05-validacao-producao.png)
 
 Os testes de disponibilidade realizados nas portas `8081` e `8082` retornaram `HTTP 401 Unauthorized`, resultado esperado para uma requisição sem autenticação na rota `/`.
 
